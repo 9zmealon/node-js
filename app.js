@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var passport = require('passport');
 var logger = require('morgan');
 var indexRouter = require('./routes/index');
 //----------------------------------------------------------------------
@@ -17,6 +18,8 @@ var indexRouter = require('./routes/index');
                     var authRouter = require('./routes/auth');
                     var budgetRouter = require('./routes/budget');
                     var uploadRouter = require('./routes/uploadImage');
+                    var galleryRouter = require('./routes/gallery');
+                    var authPassportRouter = require('./routes/authPassport');
 //-------------------------------------------------------------------------
 var app = express();
 // view engine setup
@@ -31,6 +34,8 @@ app.use(cookieParser());
 //----------------------------------------------------------------
 app.use(bodyParser.json());//Body parsse package
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(session({
   secret: 'login',
@@ -41,6 +46,7 @@ app.use(session({
 
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'files')));
 
 
 
@@ -72,6 +78,8 @@ app.use('/', indexRouter);
             app.use('/auth', authRouter);
             app.use('/budget', budgetRouter);
             app.use('/upload', uploadRouter);
+            app.use('/gallery', galleryRouter);
+            app.use('/authPassport', authPassportRouter);
 //-----------------------------------------------------------------
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
