@@ -33,23 +33,32 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(bodyParser.json());//Body parsse package
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(passport.initialize());//-------passprot
-app.use(passport.session());//-------passportSession
+
+//Express session -> This works on application level
 app.use(session({
   secret: 'login',
   resave: true,
   saveUninitialized: false
 }));//session package
-passport.serializeUser(function(user, done) {//-------passport Sereialize
-  done(null, user[0].id);
-});
+
+app.use(passport.initialize());//-------passprot
+app.use(passport.session());//-------passportSession
+
+
+
+
 var connection = require("./routes/dbConnction/databaseConnection");//-------For DB connection
 passport.deserializeUser(function(id, done) {//-------passport Deserialize
   connection.query("SELECT * from users WHERE id = ?", id, function(err, user) {
     if(err) throw err;
-    done(err, user);
+    done(err, user[0]);
   });
 });
+
+passport.serializeUser(function(user, done) {//-------passport Sereialize
+  done(null, user[0].id);
+});
+
 //---------------------------------------------------------------
 
 app.use(express.static(path.join(__dirname, 'public')));

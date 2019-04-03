@@ -5,14 +5,18 @@ var connection = require("./dbConnction/databaseConnection");
 var passport = require('passport')
     , LocalStrategy = require('passport-local').Strategy;
 
-passport.use(new LocalStrategy(
+passport.use(new LocalStrategy({
+    usernameField: 'username',
+    passwordField: 'password'
+},
     function (username, password, done) {
-        connection.query('SELECT * from users where usersname =? and password = ?', [username, password],
+        var query = connection.query('SELECT * from users where usersname =? and password = ?', [username, password],
             (err, result) => {
                 if (err) return done(err);
                 if (!result) return done(null, false, { message: "users not found" });
                 return done(null, result);
             })
+
         // User.findOne({ username: username }, function(err, user) {
         //   if (err) { return done(err); }
         //   if (!user) {
@@ -39,31 +43,33 @@ passport.use(new LocalStrategy(
 //             meg: "login success"
 //         })
 //     })
-router.get('/dashboard',(req,res,next)=>{
-    if(!req.isAuthenticated()){
+router.get('/dashboard', (req, res, next) => {//-------dashboard
+    if (!req.isAuthenticated()) {
         res.send({
-            message:'Not logged in.'
+            message: 'Not logged in.'
         })
+    }next();
+    },
+    (req, res) => {
+        res.send({
+            message: "loggedIn. Welcome to dashboard",
+            logout: "/authPassport/logout"
+        });
     }
-    next();
-},
-    (req,res)=>{
-    res.send({
-        message: "loggedIn. Welcome to dashboard",
-        logout: "/authPassport/logout"
-    });
-});
-router.get('/logout', (req,res)=>{
+);
+router.get('/logout', (req, res) => {//-------LogOut
     req.logOut();
     res.send({
         message: "successfully logout."
     });
 });
 
-router.post('/login',
-  passport.authenticate('local', { successRedirect: '/authPassport/dashboard',
-                                   failureRedirect: '404',
-                                   failureFlash: true })
+router.post('/login',//-------Login
+    passport.authenticate('local', {
+        successRedirect: '/authPassport/dashboard',
+        failureRedirect: '404',
+        failureFlash: true
+    })
 )
 
 module.exports = router;
